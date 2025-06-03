@@ -146,9 +146,9 @@ const ChatInput = () => {
             const file = items[i].getAsFile();
             if (!file) continue;
 
-            const MAX_FILE_SIZE = 25 * 1024 * 1024;
+            const MAX_FILE_SIZE = 500 * 1024 * 1024;
             if (file.size > MAX_FILE_SIZE) {
-              toast.error("Image size should be less than 25MB");
+              toast.error("Image size should be less than 50MB");
               return;
             }
 
@@ -270,10 +270,10 @@ const ChatInput = () => {
           return;
         }
 
-        const MAX_FILE_SIZE = 25 * 1024 * 1024;
+        const MAX_FILE_SIZE = 50 * 1024 * 1024;
         const oversizedFiles = imageFiles.filter(file => file.size > MAX_FILE_SIZE);
         if (oversizedFiles.length > 0) {
-          toast.error(`Some images exceed 25MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`);
+          toast.error(`Some images exceed 50MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`);
           return;
         }
 
@@ -399,10 +399,10 @@ const ChatInput = () => {
       return;
     }
 
-    const MAX_FILE_SIZE = 25 * 1024 * 1024;
+    const MAX_FILE_SIZE = 50 * 1024 * 1024;
     const oversizedFiles = imageFiles.filter(file => file.size > MAX_FILE_SIZE);
     if (oversizedFiles.length > 0) {
-      toast.error(`Some images exceed 25MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`);
+      toast.error(`Some images exceed 50MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`);
       return;
     }
 
@@ -483,9 +483,9 @@ const ChatInput = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const MAX_FILE_SIZE = 25 * 1024 * 1024;
+    const MAX_FILE_SIZE = 500 * 1024 * 1024;
     if (file.size > MAX_FILE_SIZE) {
-      toast.error("Document size should be less than 25MB");
+      toast.error("Document size should be less than 50MB");
       return;
     }
 
