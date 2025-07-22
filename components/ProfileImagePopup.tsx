@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import React from 'react';
 
+
 interface ProfileImagePopupProps {
     imageUrl: string;
     username: string;
