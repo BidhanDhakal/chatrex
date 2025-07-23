@@ -222,7 +222,7 @@ const Message = ({
             isNew && "animate-message-bubble"
           )}>
             {type === 'text' && (
-              <p className="whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap flex items-center flex-wrap gap-[1px] leading-relaxed">
                 <EmojiParser text={renderTextWithLinks(content as string)} />
               </p>
             )}

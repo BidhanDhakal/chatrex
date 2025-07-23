@@ -146,3 +146,17 @@ body {
   z-index: 1;
   position: relative;
 }
+
+/* Emoji styling */
+.EmojiPickerReact {
+  --epr-emoji-size: 26px !important;
+  --epr-hover-bg-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Adjust emoji vertical alignment in messages */
+.emoji-container {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 1px;
+}

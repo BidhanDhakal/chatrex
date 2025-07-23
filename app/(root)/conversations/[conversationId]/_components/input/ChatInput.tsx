@@ -8,7 +8,7 @@ import { useMutation, useQuery } from 'convex/react';
 import { Smile, Image, Loader2, Send, X, Plus, FileText } from 'lucide-react';
 import React, { useRef, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import EmojiPicker, { Theme } from 'emoji-picker-react';
+import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -579,6 +579,8 @@ const ChatInput = () => {
             searchPlaceholder="Search emoji..."
             lazyLoadEmojis={true}
             autoFocusSearch={false}
+            emojiStyle={EmojiStyle.APPLE}
+            emojiSize={26}
           />
         </div>
       );
@@ -591,9 +593,9 @@ const ChatInput = () => {
             <button
               key={index}
               onClick={() => handleEmojiSelect({ emoji })}
-              className="p-1 hover:bg-muted rounded text-lg"
+              className="p-1 hover:bg-muted rounded text-xl"
             >
-              {emoji}
+              <span className="emoji-container">{emoji}</span>
             </button>
           ))}
         </div>

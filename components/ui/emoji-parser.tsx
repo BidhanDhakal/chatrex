@@ -3,6 +3,7 @@
 import React from "react";
 import ShieldTooltip from "./shield-tooltip";
 import CrownTooltip from "./crown-tooltip";
+import { Emoji, EmojiStyle } from "emoji-picker-react";
 
 interface EmojiParserProps {
     text: string | React.ReactNode[];
@@ -10,8 +11,8 @@ interface EmojiParserProps {
 }
 
 /**
- * A component that parses text for shield and crown emojis and replaces them with the respective tooltip components.
- * This allows the Verified and Premium tooltips to appear on hover of specific emojis throughout the app.
+ * A component that parses text for emojis and replaces them with the Emoji component from emoji-picker-react.
+ * Also handles special emojis like shield and crown with their respective tooltip components.
  */
 const EmojiParser = ({ text, className }: EmojiParserProps) => {
     // If text is already ReactNode[], we assume it's already been processed for links
@@ -31,8 +32,9 @@ const EmojiParser = ({ text, className }: EmojiParserProps) => {
         );
     }
 
-    // If text is a string, process it for both emojis
+    // If text is a string, process it for emojis
     if (typeof text === 'string') {
+        // Special handling for shield and crown emojis
         // Process the shield emoji first
         const shieldParts = text.split("🛡️");
 
@@ -41,15 +43,16 @@ const EmojiParser = ({ text, className }: EmojiParserProps) => {
             // Check for crown emoji
             const crownParts = text.split("👑");
 
-            // If no crown emojis either, just return the text
+            // If no crown emojis either, parse for regular emojis
             if (crownParts.length === 1) {
-                return <span className={className}>{text}</span>;
+                // Parse for regular emojis
+                return <span className={className}>{parseRegularEmojis(text)}</span>;
             }
 
             // Construct a new array with the parts and crown tooltips
             const crownResult = crownParts.reduce((acc: React.ReactNode[], part, index) => {
-                // Always push the text part
-                acc.push(<span key={`text-${index}`}>{part}</span>);
+                // Parse regular emojis in this part
+                acc.push(<span key={`text-${index}`}>{parseRegularEmojis(part)}</span>);
 
                 // If not the last part, push a crown tooltip
                 if (index < crownParts.length - 1) {
@@ -68,12 +71,12 @@ const EmojiParser = ({ text, className }: EmojiParserProps) => {
             const crownParts = part.split("👑");
 
             if (crownParts.length === 1) {
-                // No crown emojis in this part
-                acc.push(<span key={`text-${index}`}>{part}</span>);
+                // No crown emojis in this part, parse regular emojis
+                acc.push(<span key={`text-${index}`}>{parseRegularEmojis(part)}</span>);
             } else {
                 // This part contains crown emojis, process them
                 const crownResult = crownParts.reduce((crownAcc: React.ReactNode[], crownPart, crownIndex) => {
-                    crownAcc.push(<span key={`crown-text-${index}-${crownIndex}`}>{crownPart}</span>);
+                    crownAcc.push(<span key={`crown-text-${index}-${crownIndex}`}>{parseRegularEmojis(crownPart)}</span>);
 
                     // If not the last part, push a crown tooltip
                     if (crownIndex < crownParts.length - 1) {
@@ -99,6 +102,67 @@ const EmojiParser = ({ text, className }: EmojiParserProps) => {
 
     // Default fallback
     return <span className={className}>{text}</span>;
+};
+
+// Function to parse regular emojis and replace them with the Emoji component
+const parseRegularEmojis = (text: string): React.ReactNode[] => {
+    if (!text) return [];
+
+    // Regex to match emoji characters
+    // This regex matches standard emojis, emoji sequences, and emoji with modifiers
+    const emojiRegex = /(\p{Emoji_Presentation}|\p{Emoji}\uFE0F|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Component}+)/gu;
+
+    const parts = text.split(emojiRegex);
+    const matches = text.match(emojiRegex) || [];
+    const result: React.ReactNode[] = [];
+
+    let i = 0;
+    let matchIndex = 0;
+
+    // Process each part
+    for (const part of parts) {
+        if (part) {
+            // Check if this part is an emoji (matches the regex)
+            const isEmoji = matchIndex < matches.length && matches[matchIndex] === part;
+
+            if (isEmoji) {
+                // This is an emoji - render using the Emoji component with increased size
+                result.push(
+                    <span key={`emoji-wrapper-${i}`} className="emoji-container">
+                        <Emoji
+                            key={`emoji-${i}`}
+                            unified={getUnifiedCode(part)}
+                            size={26}
+                            emojiStyle={EmojiStyle.APPLE}
+                        />
+                    </span>
+                );
+                matchIndex++;
+            } else {
+                // This is regular text
+                result.push(<span key={`text-${i}`}>{part}</span>);
+            }
+            i++;
+        }
+    }
+
+    return result;
+};
+
+// Helper function to convert emoji to unified code
+const getUnifiedCode = (emoji: string): string => {
+    try {
+        return Array.from(emoji)
+            .map(char => {
+                const codePoint = char.codePointAt(0);
+                return codePoint ? codePoint.toString(16) : '';
+            })
+            .filter(Boolean)
+            .join('-');
+    } catch (error) {
+        console.error("Error getting unified code for emoji:", error);
+        return '';
+    }
 };
 
 export default EmojiParser; 
