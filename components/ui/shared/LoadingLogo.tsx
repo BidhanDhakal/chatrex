@@ -54,13 +54,6 @@ const LoadingLogo = ({ size = 180 }: Props) => {
             <h1 className='text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent animate-gradient'>
               Chatrex
             </h1>
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <span className="h-1 w-1 rounded-full bg-primary/60" />
-              <p className='text-sm font-medium text-muted-foreground/90'>
-                By Bidhan Dhakal
-              </p>
-              <span className="h-1 w-1 rounded-full bg-primary/60" />
-            </div>
             <div className="mt-1.5 px-3 py-0.5 rounded-full bg-muted/30 backdrop-blur-sm">
               <p className='text-xs text-muted-foreground/70 tracking-wide font-medium'>
                 Still in Development
@@ -90,13 +83,7 @@ const LoadingLogo = ({ size = 180 }: Props) => {
               <h1 className='text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent animate-gradient'>
                 Chatrex
               </h1>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-                <p className='text-lg font-medium text-muted-foreground/90'>
-                  By Bidhan Dhakal
-                </p>
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-              </div>
+
               <div className="mt-2 px-4 py-1 rounded-full bg-muted/30 backdrop-blur-sm">
                 <p className='text-sm text-muted-foreground/70 tracking-wide font-medium'>
                   Still in Development
