@@ -151,6 +151,7 @@ body {
 .EmojiPickerReact {
   --epr-emoji-size: 26px !important;
   --epr-hover-bg-color: rgba(0, 0, 0, 0.1) !important;
+  --epr-category-label-height: 30px !important;
 }
 
 /* Adjust emoji vertical alignment in messages */
@@ -159,4 +160,6 @@ body {
   align-items: center;
   vertical-align: middle;
   margin: 0 1px;
+  font-size: 26px;
+  /* Ensure consistent emoji size */
 }

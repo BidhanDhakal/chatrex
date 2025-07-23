@@ -580,7 +580,6 @@ const ChatInput = () => {
             lazyLoadEmojis={true}
             autoFocusSearch={false}
             emojiStyle={EmojiStyle.APPLE}
-            emojiSize={26}
           />
         </div>
       );
