@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
 import { useMutation, useQuery } from 'convex/react';
-import { Smile, Image, Loader2, Send, X, Plus, FileText } from 'lucide-react';
+import { Smile, Image, Loader2, Send, X, Plus, FileText, WifiOff } from 'lucide-react';
 import React, { useRef, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import EmojiPicker, { Theme, EmojiStyle } from 'emoji-picker-react';
@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUser } from "@clerk/nextjs";
+import { isOnline } from '@/lib/serviceWorkerUtils';
 
 // Common emojis for non-premium users
 const commonEmojis = [
@@ -44,6 +45,7 @@ const ChatInput = () => {
   const [hasImageInClipboard, setHasImageInClipboard] = useState<boolean>(false);
   const [isPasteMode, setIsPasteMode] = useState<boolean>(false);
   const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
+  const [isOffline, setIsOffline] = useState<boolean>(false);
 
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -52,6 +54,27 @@ const ChatInput = () => {
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
   const getFileUrl = useMutation(api.files.getUrl);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  // Check online status
+  useEffect(() => {
+    const checkOnlineStatus = () => {
+      setIsOffline(!isOnline());
+    };
+
+    // Check on mount and when online status changes
+    checkOnlineStatus();
+
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Auto-resize textarea based on content
   useEffect(() => {
@@ -355,6 +378,12 @@ const ChatInput = () => {
   const onSubmit = async () => {
     if (!content.trim()) return;
 
+    // Check if offline
+    if (isOffline) {
+      toast.error("You're offline. Can't send messages right now.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       await createMessage({
@@ -606,6 +635,12 @@ const ChatInput = () => {
     <div
       className={`p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 fixed bottom-2 left-0 w-full z-20 md:static md:z-auto md:bottom-0 md:border-t ${isDraggingOver ? 'ring-2 ring-primary' : ''}`}
     >
+      {isOffline && (
+        <div className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs rounded-md p-2 mb-2 flex items-center gap-2">
+          <WifiOff className="h-3 w-3" />
+          <span>You're offline. Messages can't be sent until you're back online.</span>
+        </div>
+      )}
       <div className="flex flex-col items-center">
         <div className="flex items-end gap-x-2 w-full">
           {/* Hidden file inputs */}
@@ -615,7 +650,7 @@ const ChatInput = () => {
             className="hidden"
             accept="image/*"
             onChange={handleImageUpload}
-            disabled={isUploadingImage}
+            disabled={isUploadingImage || isOffline}
             multiple
           />
           <input
@@ -624,7 +659,7 @@ const ChatInput = () => {
             className="hidden"
             accept=".pdf,.doc,.docx,.txt"
             onChange={handleDocUpload}
-            disabled={isUploadingDoc}
+            disabled={isUploadingDoc || isOffline}
           />
 
           <div className="flex-1 relative flex items-center">
@@ -634,7 +669,7 @@ const ChatInput = () => {
                   <Button
                     size="icon"
                     variant="ghost"
-                    disabled={isUploadingImage || isUploadingDoc || isSubmitting}
+                    disabled={isUploadingImage || isUploadingDoc || isSubmitting || isOffline}
                     className="h-6 w-6 p-0 transition-colors hover:text-foreground"
                   >
                     {isUploadingImage || isUploadingDoc ? (
@@ -651,6 +686,7 @@ const ChatInput = () => {
                   <DropdownMenuItem
                     onClick={handleImageClick}
                     className="flex items-center gap-2 cursor-pointer hover:bg-muted/50"
+                    disabled={isOffline}
                   >
                     <Image className="h-4 w-4" />
                     <span>Photo</span>
@@ -658,6 +694,7 @@ const ChatInput = () => {
                   <DropdownMenuItem
                     onClick={handleDocClick}
                     className="flex items-center gap-2 cursor-pointer hover:bg-muted/50"
+                    disabled={isOffline}
                   >
                     <FileText className="h-4 w-4" />
                     <span>Document</span>
@@ -672,10 +709,10 @@ const ChatInput = () => {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 onKeyDown={onKeyDown}
-                placeholder="Message..."
+                placeholder={isOffline ? "You're offline. Can't send messages." : "Message..."}
                 rows={1}
-                className={`resize-none min-h-[44px] max-h-[150px] py-3 pl-10 pr-20 overflow-y-auto rounded-full bg-muted/50 border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none`}
-                disabled={isSubmitting || isUploadingImage || isUploadingDoc}
+                className={`resize-none min-h-[44px] max-h-[150px] py-3 pl-10 pr-20 overflow-y-auto rounded-full bg-muted/50 border-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none ${isOffline ? 'opacity-70' : ''}`}
+                disabled={isSubmitting || isUploadingImage || isUploadingDoc || isOffline}
               />
             </div>
 
@@ -685,7 +722,7 @@ const ChatInput = () => {
                   size="icon"
                   variant="ghost"
                   className="text-muted-foreground hover:text-foreground h-9 w-9 rounded-full hover:bg-muted/50 transition-colors"
-                  disabled={isSubmitting || isUploadingImage || isUploadingDoc}
+                  disabled={isSubmitting || isUploadingImage || isUploadingDoc || isOffline}
                   onClick={() => setIsEmojiPickerOpen(!isEmojiPickerOpen)}
                 >
                   <Smile className="h-5 w-5" />
@@ -695,8 +732,8 @@ const ChatInput = () => {
               <Button
                 size="icon"
                 onClick={onSubmit}
-                disabled={(!content.trim() && !isUploadingImage && !isUploadingDoc) || isSubmitting || isUploadingImage || isUploadingDoc}
-                className="text-primary bg-primary/10 hover:bg-primary/20 h-9 w-9 rounded-full transition-all duration-200 hover:scale-110 hover:shadow-md disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed"
+                disabled={(!content.trim() && !isUploadingImage && !isUploadingDoc) || isSubmitting || isUploadingImage || isUploadingDoc || isOffline}
+                className={`text-primary bg-primary/10 hover:bg-primary/20 h-9 w-9 rounded-full transition-all duration-200 hover:scale-110 hover:shadow-md disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none disabled:cursor-not-allowed ${isOffline ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Send className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5" />
               </Button>
@@ -706,7 +743,7 @@ const ChatInput = () => {
       </div>
 
       {/* Drag overlay */}
-      {isDraggingOver && (
+      {isDraggingOver && !isOffline && (
         <div className="absolute inset-0 bg-primary/10 border-2 border-dashed border-primary rounded-lg flex items-center justify-center z-30 pointer-events-none">
           <p className="font-medium text-primary">Drop images to send</p>
         </div>

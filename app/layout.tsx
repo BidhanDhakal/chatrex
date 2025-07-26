@@ -8,6 +8,8 @@ import { ThemeColor } from "@/components/ui/theme/theme-color";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
+import { ServiceWorkerProvider } from "@/providers/ServiceWorkerProvider";
+import { OfflineIndicator } from "@/components/ui/shared/OfflineIndicator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -89,14 +91,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ThemeColor />
-          <ConvexClientProvider>
-            <TooltipProvider>
-              {children}
-            </TooltipProvider>
-            <Toaster richColors />
-            <Analytics />
-          </ConvexClientProvider>
+          <ServiceWorkerProvider>
+            <ThemeColor />
+            <ConvexClientProvider>
+              <TooltipProvider>
+                {children}
+              </TooltipProvider>
+              <Toaster richColors />
+              <Analytics />
+              <OfflineIndicator />
+            </ConvexClientProvider>
+          </ServiceWorkerProvider>
         </ThemeProvider>
       </body>
     </html>
