@@ -22,25 +22,51 @@ export const registerServiceWorker = async () => {
     }
 };
 
+// Ensure conversationId is a string
+const ensureString = (value: string | string[] | unknown): string => {
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (Array.isArray(value) && value.length > 0) {
+        return String(value[0]);
+    }
+    return String(value || '');
+};
+
 // Cache messages for offline access
-export const cacheMessages = (conversationId: string, messages: any[]) => {
+export const cacheMessages = (conversationId: string | string[] | unknown, messages: any[]) => {
     if (!isServiceWorkerSupported() || !navigator.serviceWorker.controller) {
         console.log('Service worker not active, cannot cache messages');
         return;
     }
 
+    const conversationIdString = ensureString(conversationId);
+
+    if (!conversationIdString) {
+        console.log('Invalid conversation ID, cannot cache messages');
+        return;
+    }
+
     navigator.serviceWorker.controller.postMessage({
         type: 'CACHE_MESSAGES',
-        conversationId,
+        conversationId: conversationIdString,
         messages
     });
 };
 
 // Retrieve cached messages
-export const getCachedMessages = (conversationId: string): Promise<any[]> => {
+export const getCachedMessages = (conversationId: string | string[] | unknown): Promise<any[]> => {
     return new Promise((resolve) => {
         if (!isServiceWorkerSupported() || !navigator.serviceWorker.controller) {
             console.log('Service worker not active, cannot retrieve cached messages');
+            resolve([]);
+            return;
+        }
+
+        const conversationIdString = ensureString(conversationId);
+
+        if (!conversationIdString) {
+            console.log('Invalid conversation ID, cannot retrieve cached messages');
             resolve([]);
             return;
         }
@@ -51,7 +77,7 @@ export const getCachedMessages = (conversationId: string): Promise<any[]> => {
         // Set up the onmessage handler to receive the response
         messageChannel.port1.onmessage = (event) => {
             if (event.data && event.data.type === 'CACHED_MESSAGES' &&
-                event.data.conversationId === conversationId) {
+                event.data.conversationId === conversationIdString) {
                 resolve(event.data.messages || []);
             } else {
                 resolve([]);
@@ -62,7 +88,7 @@ export const getCachedMessages = (conversationId: string): Promise<any[]> => {
         navigator.serviceWorker.controller.postMessage(
             {
                 type: 'GET_CACHED_MESSAGES',
-                conversationId
+                conversationId: conversationIdString
             },
             [messageChannel.port2]
         );

@@ -27,6 +27,11 @@ const Body = ({ members }: Props) => {
   const [offlineMessages, setOfflineMessages] = useState<any[] | null>(null);
   const [isOffline, setIsOffline] = useState(false);
 
+  // Get conversationId as string for caching
+  const conversationIdString = typeof conversationId === 'string'
+    ? conversationId
+    : Array.isArray(conversationId) ? conversationId[0] : '';
+
   // Check online status and load cached messages if offline
   useEffect(() => {
     const checkOnlineStatus = () => {
@@ -60,14 +65,14 @@ const Body = ({ members }: Props) => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [conversationId]);
+  }, [conversationIdString]);
 
   // Load cached messages from service worker
   const loadCachedMessages = async () => {
-    if (!conversationId) return;
+    if (!conversationIdString) return;
 
     try {
-      const cached = await getCachedMessages(conversationId);
+      const cached = await getCachedMessages(conversationIdString);
       if (cached && cached.length > 0) {
         setOfflineMessages(cached);
       }
@@ -78,10 +83,10 @@ const Body = ({ members }: Props) => {
 
   // Cache messages when they're loaded from the server
   useEffect(() => {
-    if (messages && messages.length > 0 && isOnline()) {
-      cacheMessages(conversationId, messages);
+    if (messages && messages.length > 0 && isOnline() && conversationIdString) {
+      cacheMessages(conversationIdString, messages);
     }
-  }, [messages, conversationId]);
+  }, [messages, conversationIdString]);
 
   useEffect(() => {
     // Skip notification on initial load
