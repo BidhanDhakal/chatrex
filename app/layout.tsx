@@ -4,6 +4,7 @@ import "./globals.css";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { ThemeProvider } from "@/components/ui/theme/theme-provider";
+import { ThemeColor } from "@/components/ui/theme/theme-color";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
@@ -23,7 +24,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#f4511e",
 };
 
 export const metadata: Metadata = {
@@ -66,7 +66,6 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
-        <meta name="theme-color" content="#f4511e" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Chatrex" />
@@ -90,6 +89,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <ThemeColor />
           <ConvexClientProvider>
             <TooltipProvider>
               {children}
